@@ -101,7 +101,7 @@ function YouTube-Upload
 
     try
     {
-        Add-Type -LiteralPath "$PSScriptRoot\Google.Apis.Merged.dll";
+        Add-Type -LiteralPath "$PSScriptRoot\Google.Apis.YouTube.v3.Merged.dll";
     }
     catch
     {
