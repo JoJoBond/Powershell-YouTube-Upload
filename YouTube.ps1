@@ -188,6 +188,7 @@ function Add-YouTube-Video
         $p.StartInfo.UseShellExecute = $false;
         $p.StartInfo.RedirectStandardOutput = $true;
         $p.StartInfo.CreateNoWindow = $true;
+	$p.Start() | Out-Null;
 
         while (-not $p.HasExited)
         {
