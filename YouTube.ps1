@@ -142,7 +142,7 @@ function Add-YouTube-Video
     }
 
     if($PSBoundParameters.ContainsKey('LocationDescription')) {
-        $YouTubeCLI_Params += " -LocationDescription $LocationDescription";
+        $YouTubeCLI_Params += " -LocationDescription ""$LocationDescription""";
     }
 
     if($PSBoundParameters.ContainsKey('LocationCoordinates')) {
