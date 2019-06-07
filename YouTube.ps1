@@ -89,7 +89,7 @@ function Add-YouTube-Video
         [string]$LocationDescription,
 
         [Parameter(Mandatory=$False,Position=10)]
-        [System.Drawing.PointF]$LocationCoordinates,
+        [System.Numerics.Vector2]$LocationCoordinates,
                 
         [Parameter(Mandatory=$False,Position=11)]
         [ValidateScript({[datetime]::ParseExact($_, 'yyyy-MM-dd', $null)})]
