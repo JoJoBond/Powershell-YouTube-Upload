@@ -7,10 +7,8 @@ using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml;
 
 
 namespace YouTube
@@ -518,7 +516,7 @@ namespace YouTube
                 playlistItem.Snippet.ResourceId = new ResourceId();
                 playlistItem.Snippet.ResourceId.Kind = "youtube#video";
                 playlistItem.Snippet.ResourceId.VideoId = VideoID;
-                playlistItem = await youtubeService.PlaylistItems.Insert(playlistItem, "snippet").ExecuteAsync();
+                _ = await youtubeService.PlaylistItems.Insert(playlistItem, "snippet").ExecuteAsync();
             }
 
             PlaylistID = playlist.Id;
@@ -614,7 +612,7 @@ namespace YouTube
                     video.RecordingDetails.LocationDescription = Configuration[FSM_ArgParser.LocationDescription] as string;
 
                 if (Configuration.ContainsKey(FSM_ArgParser.RecordingDate))
-                    video.RecordingDetails.RecordingDate = (DateTime)Configuration[FSM_ArgParser.RecordingDate];
+                    video.RecordingDetails.RecordingDate = ((DateTime)Configuration[FSM_ArgParser.RecordingDate]).ToUniversalTime().ToString("o");
 
                 if (Configuration.ContainsKey(FSM_ArgParser.Location_Latitude) ||
                 Configuration.ContainsKey(FSM_ArgParser.Location_Longitude))
@@ -633,11 +631,11 @@ namespace YouTube
             Console.WriteLine("Selected file: {0} ", filePath);
             Console.WriteLine("File size: {0} ", FileSize);
 
-            int Chunksize = (int)((FileSize / 100) / ResumableUpload<Video>.MinimumChunkSize) * ResumableUpload<Video>.MinimumChunkSize;
-            if (FileSize < ResumableUpload<Video>.MinimumChunkSize)
-                Chunksize = ResumableUpload<Video>.MinimumChunkSize;
-            else if (FileSize > (ResumableUpload<Video>.MinimumChunkSize * 4 * 40))
-                Chunksize = ResumableUpload<Video>.MinimumChunkSize * 4 * 40;
+            int Chunksize = (int)((FileSize / 100) / ResumableUpload.MinimumChunkSize) * ResumableUpload.MinimumChunkSize;
+            if (Chunksize < ResumableUpload.MinimumChunkSize)
+                Chunksize = ResumableUpload.MinimumChunkSize;
+            else if (Chunksize > (ResumableUpload.MinimumChunkSize * 4 * 40))
+                Chunksize = ResumableUpload.MinimumChunkSize * 4 * 40;
 
             using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, Chunksize / 8))
             {
