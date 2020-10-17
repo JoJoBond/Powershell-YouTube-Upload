@@ -89,7 +89,7 @@ function Add-YouTube-Video
         [string]$LocationDescription,
 
         [Parameter(Mandatory=$False,Position=10)]
-        [System.Drawing.PointF]$LocationCoordinates,
+        [System.Numerics.Vector2]$LocationCoordinates,
                 
         [Parameter(Mandatory=$False,Position=11)]
         [ValidateScript({[datetime]::ParseExact($_, 'yyyy-MM-dd', $null)})]
@@ -142,7 +142,7 @@ function Add-YouTube-Video
     }
 
     if($PSBoundParameters.ContainsKey('LocationDescription')) {
-        $YouTubeCLI_Params += " -LocationDescription $LocationDescription";
+        $YouTubeCLI_Params += " -LocationDescription ""$LocationDescription""";
     }
 
     if($PSBoundParameters.ContainsKey('LocationCoordinates')) {
