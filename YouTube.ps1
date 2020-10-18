@@ -289,7 +289,7 @@ function Add-YouTube-Playlist
     )
     $YouTubeCLI = (Resolve-Path ".\YoutubeCLI.exe").Path;
 
-    $YouTubeCLI_Params = "-Mode Playlist -Operation Add -VideoIDs ""$($videoids -join '/')"" -Title ""$Title""";
+    $YouTubeCLI_Params = "-Mode Playlist -Operation Add -VideoIDs ""$($VideoIDs -join '/')"" -Title ""$Title""";
     
     if($PSBoundParameters.ContainsKey('Description')) {
         $YouTubeCLI_Params += " -Description ""$Description""";
@@ -404,5 +404,95 @@ function Remove-YouTube-Playlist
     if ($p.ExitCode -ne 0)
     {
         throw "YouTube playlist deletion failed";
+    }
+}
+
+function Include-YouTube-Playlist
+{
+    <#
+    .SYNOPSIS
+    Adds new videos to an existing YouTube playlist
+    .DESCRIPTION
+    Appends multiple videos to the an existing YouTube playlist via the YouTube API v3.
+    .EXAMPLE
+    Include-YouTube-Playlist -PlaylistID 'deadbeef' -VideoIDs ('oHg5SJYRHA0','boPyHl3iptQ')
+    .PARAMETER PlaylistID
+    ID the playlist that shall be modified.
+    .PARAMETER VideoIDs
+    List of VideoIDs that shall be added to the playlist.
+    .NOTES
+    It is necessary to supply a client_secrets.json file that should be located in the same folder as the .exe and .ps1 file.    
+    You need to generate your own client secret file.
+    #>
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$True,Position=0)]
+        [string]$PlaylistID,
+
+        [Parameter(Mandatory=$True,Position=1)]
+        [ValidateScript({$_.Length -ge 1})]
+        [string[]]$VideoIDs
+    )
+    $YouTubeCLI = (Resolve-Path ".\YoutubeCLI.exe").Path;
+
+    $YouTubeCLI_Params = "-Mode Playlist -Operation Include -PlaylistID ""$PlaylistID"" -VideoIDs ""$($VideoIDs -join '/')""";
+    
+    $p = New-Object System.Diagnostics.Process;
+    $p.StartInfo.Filename = "$YouTubeCLI";
+    $p.StartInfo.Arguments = "$YouTubeCLI_Params";
+    $p.StartInfo.UseShellExecute = $false;
+    $p.StartInfo.RedirectStandardOutput = $true;
+    $p.StartInfo.CreateNoWindow = $true;
+    $p.Start() | Out-Null;
+    $p.WaitForExit();
+
+    if ($p.ExitCode -ne 0)
+    {
+        throw "YouTube playlist inclusion failed";
+    }
+}
+
+function Exclude-YouTube-Playlist
+{
+    <#
+    .SYNOPSIS
+    Removes videos from a YouTube playlist
+    .DESCRIPTION
+    Removes multiple videos from a YouTube playlist via the YouTube API v3.
+    .EXAMPLE
+    Exclude-YouTube-Playlist -PlaylistID 'deadbeef' -VideoIDs ('oHg5SJYRHA0','boPyHl3iptQ')
+    .PARAMETER PlaylistID
+    ID the playlist that shall be modified.
+    .PARAMETER VideoIDs
+    List of VideoIDs that shall be removed from the playlist.
+    .NOTES
+    It is necessary to supply a client_secrets.json file that should be located in the same folder as the .exe and .ps1 file.    
+    You need to generate your own client secret file.
+    #>
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$True,Position=0)]
+        [string]$PlaylistID,
+
+        [Parameter(Mandatory=$True,Position=1)]
+        [ValidateScript({$_.Length -ge 1})]
+        [string[]]$VideoIDs
+    )
+    $YouTubeCLI = (Resolve-Path ".\YoutubeCLI.exe").Path;
+
+    $YouTubeCLI_Params = "-Mode Playlist -Operation Exclude -PlaylistID ""$PlaylistID"" -VideoIDs ""$($VideoIDs -join '/')""";
+    
+    $p = New-Object System.Diagnostics.Process;
+    $p.StartInfo.Filename = "$YouTubeCLI";
+    $p.StartInfo.Arguments = "$YouTubeCLI_Params";
+    $p.StartInfo.UseShellExecute = $false;
+    $p.StartInfo.RedirectStandardOutput = $true;
+    $p.StartInfo.CreateNoWindow = $true;
+    $p.Start() | Out-Null;
+    $p.WaitForExit();
+
+    if ($p.ExitCode -ne 0)
+    {
+        throw "YouTube playlist exclusion failed";
     }
 }

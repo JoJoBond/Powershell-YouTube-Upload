@@ -18,10 +18,10 @@ namespace YouTube
         Mode,
         Operation,
 
-        /* Playlist + Add */
+        /* Playlist + Add/Include/Exclude */
         VideoIDs,
 
-        /* Playlist + Remove */
+        /* Playlist + Remove/Include/Exclude */
         PlaylistID,
 
         /* Video/Playlist + Add */
@@ -59,7 +59,9 @@ namespace YouTube
     {
         None,
         Add,
-        Remove
+        Remove,
+        Include,
+        Exclude
     }
 
     internal class YouTubeCLI
@@ -95,6 +97,8 @@ namespace YouTube
                         try
                         {
                             new YouTubeCLI().AddPlaylist().Wait();
+                            Console.WriteLine("Playlist creation successful");
+                            Console.Write("PlaylistID: {0}", PlaylistID);
                         }
                         catch (AggregateException ex)
                         {
@@ -104,14 +108,13 @@ namespace YouTube
                                 return -1;
                             }
                         }
-						Console.WriteLine("Creation successful");
-						Console.Write("PlaylistID: {0}", PlaylistID);
                     }
                     else if ((Operations)Configuration[FSM_ArgParser.Operation] == Operations.Remove)
                     {
                         try
                         {
                             new YouTubeCLI().RemovePlaylist().Wait();
+                            Console.Write("Playlist deletion successful");
                         }
                         catch (AggregateException ex)
                         {
@@ -121,8 +124,38 @@ namespace YouTube
                                 return -1;
                             }
                         }
-
-                        Console.Write("Playlist deletion successful");
+                    }
+                    else if ((Operations)Configuration[FSM_ArgParser.Operation] == Operations.Include)
+                    {
+                        try
+                        {
+                            new YouTubeCLI().IncludePlaylist().Wait();
+                            Console.Write("Playlist inclusion successful");
+                        }
+                        catch (AggregateException ex)
+                        {
+                            foreach (Exception e in ex.InnerExceptions)
+                            {
+                                Console.Error.WriteLine("Error: " + e.Message);
+                                return -1;
+                            }
+                        }
+                    }
+                    else if ((Operations)Configuration[FSM_ArgParser.Operation] == Operations.Exclude)
+                    {
+                        try
+                        {
+                            new YouTubeCLI().ExcludePlaylist().Wait();
+                            Console.Write("Playlist exclusion successful");
+                        }
+                        catch (AggregateException ex)
+                        {
+                            foreach (Exception e in ex.InnerExceptions)
+                            {
+                                Console.Error.WriteLine("Error: " + e.Message);
+                                return -1;
+                            }
+                        }
                     }
 
                     break;
@@ -134,7 +167,7 @@ namespace YouTube
                         try
                         {
                             new YouTubeCLI().AddVideo().Wait();
-                            Console.WriteLine("Upload successful");
+                            Console.WriteLine("Video upload successful");
                             Console.Write("VideoID: {0}", VideoID);
                         }
                         catch (AggregateException ex)
@@ -153,6 +186,7 @@ namespace YouTube
                         try
                         {
                             new YouTubeCLI().RemoveVideo().Wait();
+                            Console.Write("Video deletion successful");
                         }
                         catch (AggregateException ex)
                         {
@@ -162,8 +196,6 @@ namespace YouTube
                                 return -1;
                             }
                         }
-
-                        Console.Write("Video deletion successful");
                     }
 
                     break;
@@ -340,6 +372,22 @@ namespace YouTube
                         if (!Configuration.ContainsKey(FSM_ArgParser.PlaylistID))
                             return FSM_ArgParser.PlaylistID.ToString() + " must be specified.";
                     }
+                    else if ((Operations)Configuration[FSM_ArgParser.Operation] == Operations.Include)
+                    {
+                        if (!Configuration.ContainsKey(FSM_ArgParser.PlaylistID))
+                            return FSM_ArgParser.PlaylistID.ToString() + " must be specified.";
+
+                        if (!Configuration.ContainsKey(FSM_ArgParser.VideoIDs))
+                            return FSM_ArgParser.VideoIDs.ToString() + " must be specified.";
+                    }
+                    else if ((Operations)Configuration[FSM_ArgParser.Operation] == Operations.Exclude)
+                    {
+                        if (!Configuration.ContainsKey(FSM_ArgParser.PlaylistID))
+                            return FSM_ArgParser.PlaylistID.ToString() + " must be specified.";
+
+                        if (!Configuration.ContainsKey(FSM_ArgParser.VideoIDs))
+                            return FSM_ArgParser.VideoIDs.ToString() + " must be specified.";
+                    }
                     else
                         return FSM_ArgParser.Operation.ToString() + " must be specified.";
 
@@ -415,8 +463,7 @@ namespace YouTube
                 HttpClientInitializer = credential,
                 ApplicationName = "Google.Apis.Auth"
             });
-
-            string Unbekannt = await youtubeService.Playlists.Delete(Configuration[FSM_ArgParser.PlaylistID] as string).ExecuteAsync();
+            _ = await youtubeService.Playlists.Delete(Configuration[FSM_ArgParser.PlaylistID] as string).ExecuteAsync();
         }
 
         internal async Task RemoveVideo()
@@ -452,8 +499,7 @@ namespace YouTube
                 HttpClientInitializer = credential,
                 ApplicationName = "Google.Apis.Auth"
             });
-
-            string Unbekannt = await youtubeService.Videos.Delete(Configuration[FSM_ArgParser.VideoID] as string).ExecuteAsync();
+            _ = await youtubeService.Videos.Delete(Configuration[FSM_ArgParser.VideoID] as string).ExecuteAsync();
         }
 
         internal async Task AddPlaylist()
@@ -690,6 +736,101 @@ namespace YouTube
                     "Google refuses to include these options into the YouTube v3 API.\n" +
                     "Please use the YouTube web UI to manipulate these options."
                 );
+            }
+        }
+
+        internal async Task IncludePlaylist()
+        {
+            Console.WriteLine("Logging in.");
+
+            UserCredential credential;
+            try
+            {
+                using (FileStream stream = new FileStream(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json"), FileMode.Open, FileAccess.Read))
+                {
+                    credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                        GoogleClientSecrets.Load(stream).Secrets,
+                        new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
+                        "user",
+                        CancellationToken.None
+                    );
+
+                    stream.Close();
+                    stream.Dispose();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("Error: " + e.Message);
+                throw new Exception("Error: " + e.Message);
+            }
+
+            Console.WriteLine("Login OK.");
+
+            YouTubeService youtubeService = new YouTubeService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "Google.Apis.Auth"
+            });
+
+            foreach (string VideoID in Configuration[FSM_ArgParser.VideoIDs] as List<string>)
+            {
+                PlaylistItem playlistItem = new PlaylistItem();
+                playlistItem.Snippet = new PlaylistItemSnippet();
+                playlistItem.Snippet.PlaylistId = Configuration[FSM_ArgParser.PlaylistID] as string;
+                playlistItem.Snippet.ResourceId = new ResourceId();
+                playlistItem.Snippet.ResourceId.Kind = "youtube#video";
+                playlistItem.Snippet.ResourceId.VideoId = VideoID;
+                _ = await youtubeService.PlaylistItems.Insert(playlistItem, "snippet").ExecuteAsync();
+            }
+        }
+
+        internal async Task ExcludePlaylist()
+        {
+            Console.WriteLine("Logging in.");
+
+            UserCredential credential;
+            try
+            {
+                using (FileStream stream = new FileStream(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json"), FileMode.Open, FileAccess.Read))
+                {
+                    credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                        GoogleClientSecrets.Load(stream).Secrets,
+                        new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
+                        "user",
+                        CancellationToken.None
+                    );
+
+                    stream.Close();
+                    stream.Dispose();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("Error: " + e.Message);
+                throw new Exception("Error: " + e.Message);
+            }
+
+            Console.WriteLine("Login OK.");
+
+            YouTubeService youtubeService = new YouTubeService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = "Google.Apis.Auth"
+            });
+
+            foreach (string VideoID in Configuration[FSM_ArgParser.VideoIDs] as List<string>)
+            {
+                PlaylistItemsResource.ListRequest playlistItemsListRequest = youtubeService.PlaylistItems.List("id");
+                playlistItemsListRequest.PlaylistId = Configuration[FSM_ArgParser.PlaylistID] as string;
+                playlistItemsListRequest.MaxResults = 50;
+                playlistItemsListRequest.VideoId = VideoID;
+                PlaylistItemListResponse playlistItemListResponse = await playlistItemsListRequest.ExecuteAsync();
+                
+                foreach (PlaylistItem playlistItem in playlistItemListResponse.Items)
+                {
+                    _ = await youtubeService.PlaylistItems.Delete(playlistItem.Id).ExecuteAsync();
+                }
             }
         }
 
