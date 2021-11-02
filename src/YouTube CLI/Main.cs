@@ -440,7 +440,7 @@ namespace YouTube
                 using (FileStream stream = new FileStream(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json"), FileMode.Open, FileAccess.Read))
                 {
                     credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                        GoogleClientSecrets.Load(stream).Secrets,
+                        GoogleClientSecrets.FromStream(stream).Secrets,
                         new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
                         "user",
                         CancellationToken.None
@@ -476,7 +476,7 @@ namespace YouTube
                 using (FileStream stream = new FileStream(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json"), FileMode.Open, FileAccess.Read))
                 {
                     credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                        GoogleClientSecrets.Load(stream).Secrets,
+                        GoogleClientSecrets.FromStream(stream).Secrets,
                         new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
                         "user",
                         CancellationToken.None
@@ -512,7 +512,7 @@ namespace YouTube
                 using (FileStream stream = new FileStream(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json"), FileMode.Open, FileAccess.Read))
                 {
                     credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                        GoogleClientSecrets.Load(stream).Secrets,
+                        GoogleClientSecrets.FromStream(stream).Secrets,
                         new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
                         "user",
                         CancellationToken.None
@@ -578,7 +578,7 @@ namespace YouTube
                 using (FileStream stream = new FileStream(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json"), FileMode.Open, FileAccess.Read))
                 {
                     credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                        GoogleClientSecrets.Load(stream).Secrets,
+                        GoogleClientSecrets.FromStream(stream).Secrets,
                         new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
                         "user",
                         CancellationToken.None
@@ -658,7 +658,7 @@ namespace YouTube
                     video.RecordingDetails.LocationDescription = Configuration[FSM_ArgParser.LocationDescription] as string;
 
                 if (Configuration.ContainsKey(FSM_ArgParser.RecordingDate))
-                    video.RecordingDetails.RecordingDate = ((DateTime)Configuration[FSM_ArgParser.RecordingDate]).ToUniversalTime().ToString("o");
+                    video.RecordingDetails.RecordingDate = ((DateTime)Configuration[FSM_ArgParser.RecordingDate]).ToUniversalTime();
 
                 if (Configuration.ContainsKey(FSM_ArgParser.Location_Latitude) ||
                 Configuration.ContainsKey(FSM_ArgParser.Location_Longitude))
@@ -749,7 +749,7 @@ namespace YouTube
                 using (FileStream stream = new FileStream(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json"), FileMode.Open, FileAccess.Read))
                 {
                     credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                        GoogleClientSecrets.Load(stream).Secrets,
+                        GoogleClientSecrets.FromStream(stream).Secrets,
                         new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
                         "user",
                         CancellationToken.None
@@ -795,7 +795,7 @@ namespace YouTube
                 using (FileStream stream = new FileStream(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json"), FileMode.Open, FileAccess.Read))
                 {
                     credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                        GoogleClientSecrets.Load(stream).Secrets,
+                        GoogleClientSecrets.FromStream(stream).Secrets,
                         new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
                         "user",
                         CancellationToken.None
