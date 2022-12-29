@@ -4,3 +4,5 @@
 
 /.vs
 /src/YouTube CLI/.vs
+/src/YouTube CLI/packages/Costura.Fody.5.7.0
+/client_secrets.json

@@ -33,6 +33,7 @@ namespace YouTube
         Tags,
         CategoryID,
         PublicStatsViewable,
+        PublishAt,
         Dimension,
         Definition,
         LocationDescription,
@@ -618,8 +619,11 @@ namespace YouTube
             video.Snippet.CategoryId = Configuration[FSM_ArgParser.CategoryID] as string;
 
 
-            if (Configuration.ContainsKey(FSM_ArgParser.PrivacyStatus) || 
-                Configuration.ContainsKey(FSM_ArgParser.PublicStatsViewable))
+            if (
+                Configuration.ContainsKey(FSM_ArgParser.PrivacyStatus) || 
+                Configuration.ContainsKey(FSM_ArgParser.PublicStatsViewable) ||
+                Configuration.ContainsKey(FSM_ArgParser.PublishAt)
+            )
             {
                 Parts += ",status";
                 video.Status = new VideoStatus();
