@@ -7,6 +7,7 @@ using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,6 +18,7 @@ namespace YouTube
     {
         Mode,
         Operation,
+        Client_Secrets,
 
         /* Playlist + Add/Include/Exclude */
         VideoIDs,
@@ -72,6 +74,7 @@ namespace YouTube
         private static long FileSize = -1;
         private static string VideoID = null;
         private static string PlaylistID = null;
+        // private static UserCredential Credential = null;
 
         [STAThread]
         static int Main(string[] args)
@@ -239,6 +242,9 @@ namespace YouTube
                             else
                                 return "Unexpected value for " + CurrState.ToString() + ": " + args[i];
                             break;
+                        case FSM_ArgParser.Client_Secrets:
+                            Configuration[(FSM_ArgParser)CurrState] = Path.GetFullPath(args[i]);
+                            break;
                         case FSM_ArgParser.VideoIDs:
                             List<string> VideoIDs = new List<string>(args[i].Split('/'));
                             foreach(string VideoID in VideoIDs)
@@ -357,7 +363,23 @@ namespace YouTube
             if (!Configuration.ContainsKey(FSM_ArgParser.Operation) || (Operations)Configuration[FSM_ArgParser.Operation] == Operations.None)
                 return FSM_ArgParser.Operation.ToString() + " must be specified.";
 
-            switch((Modes)Configuration[FSM_ArgParser.Mode])
+            if (Configuration.ContainsKey(FSM_ArgParser.Client_Secrets))
+            {
+                // No Op
+            }
+            else
+            {
+                Configuration[FSM_ArgParser.Client_Secrets] = Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json");
+            }
+            if (Configuration.ContainsKey(FSM_ArgParser.Client_Secrets))
+            {
+                FileInfo Fi = new FileInfo(Configuration[FSM_ArgParser.Client_Secrets] as string);
+                if (!Fi.Exists)
+                    return "cuient_secrets file does not exist under given file path.";
+            }
+            
+
+            switch ((Modes)Configuration[FSM_ArgParser.Mode])
             {
                 case Modes.Playlist:
                     if ((Operations)Configuration[FSM_ArgParser.Operation] == Operations.Add)
@@ -431,6 +453,35 @@ namespace YouTube
             return null;
         }
 
+        internal async Task<UserCredential> GetUserCredential() {
+            Console.WriteLine("Logging in.");
+
+            UserCredential credential;
+            
+            try
+            {
+                using (FileStream stream = new FileStream((string)Configuration[FSM_ArgParser.Client_Secrets], FileMode.Open, FileAccess.Read))
+                {
+                    credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                        GoogleClientSecrets.FromStream(stream).Secrets,
+                        new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
+                        "user",
+                        CancellationToken.None
+                    );
+
+                    stream.Close();
+                    stream.Dispose();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("Error: " + e.Message);
+                throw new Exception("Error: " + e.Message);
+            }
+
+            Console.WriteLine("Login OK.");
+            return credential; 
+        }
         internal async Task RemovePlaylist()
         {
             Console.WriteLine("Logging in.");
@@ -571,31 +622,7 @@ namespace YouTube
 
         internal async Task AddVideo()
         {
-            Console.WriteLine("Logging in.");
-            
-            UserCredential credential;
-            try
-            {
-                using (FileStream stream = new FileStream(Path.GetFullPath(AppDomain.CurrentDomain.BaseDirectory + @"\client_secrets.json"), FileMode.Open, FileAccess.Read))
-                {
-                    credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                        GoogleClientSecrets.FromStream(stream).Secrets,
-                        new[] { YouTubeService.Scope.Youtube, YouTubeService.Scope.YoutubeUpload },
-                        "user",
-                        CancellationToken.None
-                    );
-
-                    stream.Close();
-                    stream.Dispose();
-                }
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine("Error: " + e.Message);
-                throw new Exception("Error: " + e.Message);
-            }
-
-            Console.WriteLine("Login OK.");
+            UserCredential credential = await GetUserCredential();
 
             YouTubeService youtubeService = new YouTubeService(new BaseClientService.Initializer()
             {
