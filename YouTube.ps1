@@ -61,8 +61,8 @@ function Add-YouTube-Video
         [Parameter(Mandatory=$True,Position=1)]
         [string]$Title,
 
-        [Parameter(Mandatory=$True,Position=2)]
-        [int]$CategoryID,
+        [Parameter(Mandatory=$False,Position=2)]
+        [int]$CategoryID = 22,
 
         [Parameter(Mandatory=$False,Position=3)]
         [string]$Description,
@@ -72,7 +72,7 @@ function Add-YouTube-Video
 
         [ValidateSet('unlisted','private','public')] 
         [Parameter(Mandatory=$False,Position=5)]
-        [string]$PrivacyStatus,
+        [string]$PrivacyStatus = 'private',
 
         [Parameter(Mandatory=$False,Position=6)]
         [bool]$PublicStatsViewable,
@@ -113,7 +113,7 @@ function Add-YouTube-Video
 
     $File = (Resolve-Path $File.Replace("\\","\")).Path;
 
-    $YouTubeCLI = (Resolve-Path ".\YoutubeCLI.exe").Path;
+    $YouTubeCLI = (Resolve-Path (join-path $PSScriptRoot "YoutubeCLI.exe")).Path;
 
     $YouTubeCLI_Params = "-Mode Video -Operation Add -File ""$File"" -Title ""$Title"" -CategoryID $CategoryID";
 
@@ -287,7 +287,7 @@ function Add-YouTube-Playlist
         [Parameter(Mandatory=$False,Position=3)]
         [string]$PrivacyStatus
     )
-    $YouTubeCLI = (Resolve-Path ".\YoutubeCLI.exe").Path;
+    $YouTubeCLI = (Resolve-Path (join-path $PSScriptRoot "YoutubeCLI.exe")).Path;
 
     $YouTubeCLI_Params = "-Mode Playlist -Operation Add -VideoIDs ""$($VideoIDs -join '/')"" -Title ""$Title""";
     
@@ -348,7 +348,7 @@ function Remove-YouTube-Video
         [string]$VideoID
     )
 
-    $YouTubeCLI = (Resolve-Path ".\YoutubeCLI.exe").Path;
+    $YouTubeCLI = (Resolve-Path (join-path $PSScriptRoot "YoutubeCLI.exe")).Path;
 
     $YouTubeCLI_Params = "-Mode Video -Operation Remove -VideoID ""$VideoID""";
     
@@ -388,7 +388,7 @@ function Remove-YouTube-Playlist
         [string]$PlaylistID
     )
 
-    $YouTubeCLI = (Resolve-Path ".\YoutubeCLI.exe").Path;
+    $YouTubeCLI = (Resolve-Path (join-path $PSScriptRoot "YoutubeCLI.exe")).Path;
 
     $YouTubeCLI_Params = "-Mode Playlist -Operation Remove -PlaylistID ""$PlaylistID""";
     
@@ -433,7 +433,7 @@ function Include-YouTube-Playlist
         [ValidateScript({$_.Length -ge 1})]
         [string[]]$VideoIDs
     )
-    $YouTubeCLI = (Resolve-Path ".\YoutubeCLI.exe").Path;
+    $YouTubeCLI = (Resolve-Path (join-path $PSScriptRoot "YoutubeCLI.exe")).Path;
 
     $YouTubeCLI_Params = "-Mode Playlist -Operation Include -PlaylistID ""$PlaylistID"" -VideoIDs ""$($VideoIDs -join '/')""";
     
@@ -478,7 +478,7 @@ function Exclude-YouTube-Playlist
         [ValidateScript({$_.Length -ge 1})]
         [string[]]$VideoIDs
     )
-    $YouTubeCLI = (Resolve-Path ".\YoutubeCLI.exe").Path;
+    $YouTubeCLI = (Resolve-Path (join-path $PSScriptRoot "YoutubeCLI.exe")).Path;
 
     $YouTubeCLI_Params = "-Mode Playlist -Operation Exclude -PlaylistID ""$PlaylistID"" -VideoIDs ""$($VideoIDs -join '/')""";
     
