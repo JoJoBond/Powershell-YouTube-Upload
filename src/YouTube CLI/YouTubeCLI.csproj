@@ -70,7 +70,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Google.Apis.YouTube.v3">
-      <Version>1.58.0.2874</Version>
+      <Version>1.60.0.3043</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
